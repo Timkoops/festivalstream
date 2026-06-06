@@ -13,7 +13,7 @@ data:
       alertmanagers:
         - static_configs:
             - targets:
-              - 'alertmanager:9093'
+                - 'alertmanager:9093'
 
     rule_files:
       - '/etc/prometheus/alerts.yml'
@@ -22,42 +22,42 @@ data:
       - job_name: 'servers'
         static_configs:
           - targets: 
-            - 'master01:9100'
-            - 'worker01:9100'
-            - 'worker02:9100'
+              - 'master01:9100'
+              - 'worker01:9100'
+              - 'worker02:9100'
 
-# Hier worden de alerts beschreven die Prometheus moet monitoren, deze alerts worden vervolgens doorgestuurd naar Alertmanager.  
-alerts.yml: |
-  groups:
-    - name: system-alerts
-      rules:
-  
-        # Deze alert is een test alert, deze zal altijd afgaan en zorgt ervoor dat er een melding wordt gemaakt als er een alert is.
-        - alert: TestEmailAlert
-          expr: vector(1)
-          for: 1m
-          labels:
-            severity: info
-          annotations:
-            summary: "Test alert"
-            description: "Dit is een test alert, deze zal altijd afgaan en zorgt ervoor dat er een melding wordt gemaakt als er een alert is."
+  # Hier worden de alerts beschreven die Prometheus moet monitoren, deze alerts worden vervolgens doorgestuurd naar Alertmanager.  
+  alerts.yml: |
+    groups:
+      - name: system-alerts
+        rules:
+    
+          # Deze alert is een test alert, deze zal altijd afgaan en zorgt ervoor dat er een melding wordt gemaakt als er een alert is.
+          - alert: TestEmailAlert
+            expr: vector(1)
+            for: 1m
+            labels:
+              severity: info
+            annotations:
+              summary: "Test alert"
+              description: "Dit is een test alert, deze zal altijd afgaan en zorgt ervoor dat er een melding wordt gemaakt als er een alert is."
 
-        # Deze alert zorgt ervoor dat er een melding wordt gemaakt als het RAM-gebruik boven de 50% komt.
-        - alert: HighMemoryUsage
-          expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 50
-          for: 2m
-          labels:
-            severity: warning
-          annotations:
-            summary: "RAM gebruik boven 50%"
-            description: "LET OP: Het RAM-geheugen is langer dan 2 minuten boven 50% zorg dat dit niet hoger wordt. Controleer wat ervoor zorgt dat het RAM-geheugen zo hoog is. Als dit hoger wordt kan het systeem crashen."
-  
-        # Deze alert zorgt ervoor dat er een melding wordt gemaakt als het opslaggebruik boven de 40% komt.
-        - alert: HighDiskUsage
-          expr: (1 - (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"})) * 100 > 40
-          for: 2m
-          labels:
-            severity: warning
-          annotations:
-            summary: "Opslaggebruik boven 40%"
-            description: "LET OP: De opslag is langer dan 2 minuten boven 40% zorg dat dit niet hoger wordt. Als dit hoger wordt heeft het systeem minder opslagruimte."
+          # Deze alert zorgt ervoor dat er een melding wordt gemaakt als het RAM-gebruik boven de 50% komt.
+          - alert: HighMemoryUsage
+            expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 50
+            for: 2m
+            labels:
+              severity: warning
+            annotations:
+              summary: "RAM gebruik boven 50%"
+              description: "LET OP: Het RAM-geheugen is langer dan 2 minuten boven 50% zorg dat dit niet hoger wordt. Controleer wat ervoor zorgt dat het RAM-geheugen zo hoog is. Als dit hoger wordt kan het systeem crashen."
+    
+          # Deze alert zorgt ervoor dat er een melding wordt gemaakt als het opslaggebruik boven de 40% komt.
+          - alert: HighDiskUsage
+            expr: (1 - (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"})) * 100 > 40
+            for: 2m
+            labels:
+              severity: warning
+            annotations:
+              summary: "Opslaggebruik boven 40%"
+              description: "LET OP: De opslag is langer dan 2 minuten boven 40% zorg dat dit niet hoger wordt. Als dit hoger wordt heeft het systeem minder opslagruimte."
