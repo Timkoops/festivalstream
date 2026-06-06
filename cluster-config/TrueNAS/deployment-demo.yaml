@@ -7,7 +7,7 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: peristent-test
+      app: persistent-test
   template:
     metadata:
       labels:
@@ -16,7 +16,7 @@ spec:
       volumes:
         - name: truenas-volume
           persistentVolumeClaim:
-            claimName: demo-pvc
+            claimName: chat-pvc 
       containers:
         - name: alpine-container
           image: alpine
