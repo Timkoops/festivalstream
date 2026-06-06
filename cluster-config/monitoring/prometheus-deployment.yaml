@@ -59,17 +59,15 @@ spec:
     spec:
       serviceAccountName: prometheus
       securityContext:
-        runAsUser: 65534
-        runAsGroup: 65534
-        fsGroup: 65534
+        runAsUser: 0
+        runAsGroup: 0
+        fsGroup: 0
       containers:
         - name: prometheus
           image: prom/prometheus:v2.54.1
           args:
             - --config.file=/etc/prometheus/prometheus.yml
             - --storage.tsdb.path=/prometheus
-            - --web.console.libraries=/usr/share/prometheus/console_libraries
-            - --web.console.templates=/usr/share/prometheus/consoles
             - --web.enable-lifecycle
           ports:
             - containerPort: 9090
