@@ -17,6 +17,11 @@ rules:
       - services
       - endpoints
       - pods
+      - namespaces
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["discovery.k8s.io"]
+    resources:
+      - endpointslices
     verbs: ["get", "list", "watch"]
   - apiGroups: [""]
     resources:
@@ -59,15 +64,17 @@ spec:
     spec:
       serviceAccountName: prometheus
       securityContext:
-        runAsUser: 0
-        runAsGroup: 0
-        fsGroup: 0
+        runAsUser: 65534
+        runAsGroup: 65534
+        fsGroup: 65534
       containers:
         - name: prometheus
           image: prom/prometheus:v2.54.1
           args:
             - --config.file=/etc/prometheus/prometheus.yml
             - --storage.tsdb.path=/prometheus
+            - --web.console.libraries=/usr/share/prometheus/console_libraries
+            - --web.console.templates=/usr/share/prometheus/consoles
             - --web.enable-lifecycle
           ports:
             - containerPort: 9090
