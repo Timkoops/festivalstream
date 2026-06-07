@@ -129,7 +129,7 @@ data:
 
           # Deze alert zorgt ervoor dat er een melding wordt gemaakt als het RAM-gebruik boven de 50% komt.
           - alert: HighMemoryUsage
-            expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 50
+            expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 15
             for: 2m
             labels:
               severity: warning
