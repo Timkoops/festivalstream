@@ -9,14 +9,12 @@ metadata:
 spec:
   restartPolicy: Never
   containers:
-  - name: stress
-    image: progrium/stress
-    command:
-      - stress
-    args:
-      - --vm
-      - "1"
-      - --vm-bytes
-      - 5G
-      - --timeout
-      - 300s
+    - name: stress
+      image: progrium/stress
+      args:
+        - --vm
+        - "1"
+        - --vm-bytes
+        - 5G
+        - --timeout
+        - 300s
