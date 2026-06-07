@@ -25,8 +25,8 @@ spec:
             - --config.file=/etc/prometheus/prometheus.yml
             - --storage.tsdb.path=/prometheus
             # kunnen opzich wegblijven moet eerst testen
-            # - --web.console.libraries=/usr/share/prometheus/console_libraries
-            # - --web.console.templates=/usr/share/prometheus/consoles
+            - --web.console.libraries=/usr/share/prometheus/console_libraries
+            - --web.console.templates=/usr/share/prometheus/consoles
             - --web.enable-lifecycle
           ports:
             - containerPort: 9090
