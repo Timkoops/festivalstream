@@ -117,7 +117,7 @@ data:
           description: "Dit is een test alert, deze zal altijd afgaan en zorgt ervoor dat er een melding wordt gemaakt als er een alert is."
 
       - alert: HighMemoryUsage
-        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 1
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 50
         for: 2m
         labels:
           severity: warning
