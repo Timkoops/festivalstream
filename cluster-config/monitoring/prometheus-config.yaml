@@ -117,13 +117,13 @@ data:
           description: "Dit is een test alert, deze zal altijd afgaan en zorgt ervoor dat er een melding wordt gemaakt als er een alert is."
 
       - alert: HighMemoryUsage
-        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 15
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 1
         for: 2m
         labels:
           severity: warning
         annotations:
-          summary: "RAM gebruik boven 15%"
-          description: "LET OP: Het RAM-geheugen is langer dan 2 minuten boven 15%. Controleer wat ervoor zorgt dat het RAM-geheugen zo hoog is."
+          summary: "RAM gebruik boven 50%"
+          description: "LET OP: Het RAM-geheugen is langer dan 2 minuten boven 50%. Controleer wat ervoor zorgt dat het RAM-geheugen zo hoog is."
 
       - alert: HighDiskUsage
         expr: (1 - (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"})) * 100 > 40
