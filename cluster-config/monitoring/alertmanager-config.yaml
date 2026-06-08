@@ -17,7 +17,7 @@ data:
       receiver: email
       group_wait: 10s
       group_interval: 30s
-      repeat_interval: 2m
+      repeat_interval: 24h
     
     # Dit zijn de ontvangers van de meldingen, in dit geval is het een email ontvanger. Hier worden de email adressen opgegeven waar de meldingen naartoe gestuurd moeten worden.      
     receivers:
