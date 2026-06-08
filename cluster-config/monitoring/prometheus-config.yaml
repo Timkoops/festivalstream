@@ -11,138 +11,152 @@ data:
 
     alerting:
       alertmanagers:
-        - static_configs:
-            - targets:
-                - 'alertmanager:9093'
+      - static_configs:
+        - targets:
+          - 'alertmanager:9093'
 
     rule_files:
-      - /etc/prometheus/alerts.yml
+    - /etc/prometheus/alerts.yml
 
     scrape_configs:
-      - job_name: 'prometheus'
-        static_configs:
-          - targets:
-              - 'prometheus:9090'
+    - job_name: 'prometheus'
+      static_configs:
+      - targets:
+        - 'prometheus:9090'
 
-      - job_name: 'servers'
-        static_configs:
-          - targets:
-              - 'master01:9100'
-              - 'worker01:9100'
-              - 'worker02:9100'
+    - job_name: 'servers'
+      kubernetes_sd_configs:
+      - role: node
+      relabel_configs:
+      - action: labelmap
+        regex: __meta_kubernetes_node_label_(.+)
+      - source_labels: [__meta_kubernetes_node_address_InternalIP]
+        regex: (.+)
+        target_label: __address__
+        replacement: ${1}:9100
+      - source_labels: [__meta_kubernetes_node_name]
+        target_label: node
 
-      - job_name: 'kube-state-metrics'
-        static_configs:
-          - targets:
-              - 'kube-state-metrics:8080'
+    - job_name: 'kube-state-metrics'
+      static_configs:
+      - targets:
+        - 'kube-state-metrics:8080'
 
-      - job_name: 'kubernetes-nodes-cadvisor'
-        scheme: https
-        tls_config:
-          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
-          insecure_skip_verify: true
-        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
-        kubernetes_sd_configs:
-          - role: node
-        relabel_configs:
-          - action: labelmap
-            regex: __meta_kubernetes_node_label_(.+)
-          - target_label: __metrics_path__
-            replacement: /metrics/cadvisor
+    - job_name: 'kubernetes-pods'
+      kubernetes_sd_configs:
+      - role: pod
+      relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+        action: keep
+        regex: "true"
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+        action: replace
+        target_label: __metrics_path__
+        regex: (.+)
+      - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+        action: replace
+        regex: ([^:]+)(?::\d+)?;(\d+)
+        replacement: $1:$2
+        target_label: __address__
+      - action: labelmap
+        regex: __meta_kubernetes_pod_label_(.+)
+      - source_labels: [__meta_kubernetes_namespace]
+        action: replace
+        target_label: namespace
+      - source_labels: [__meta_kubernetes_pod_name]
+        action: replace
+        target_label: pod
 
-      - job_name: 'kubernetes-pods'
-        kubernetes_sd_configs:
-          - role: pod
-        relabel_configs:
-          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
-            action: keep
-            regex: "true"
-          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
-            action: replace
-            target_label: __metrics_path__
-            regex: (.+)
-          - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
-            action: replace
-            regex: ([^:]+)(?::\d+)?;(\d+)
-            replacement: $1:$2
-            target_label: __address__
-          - action: labelmap
-            regex: __meta_kubernetes_pod_label_(.+)
-          - source_labels: [__meta_kubernetes_namespace]
-            action: replace
-            target_label: namespace
-          - source_labels: [__meta_kubernetes_pod_name]
-            action: replace
-            target_label: pod
+    - job_name: 'kubernetes-services'
+      kubernetes_sd_configs:
+      - role: service
+      relabel_configs:
+      - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_scrape]
+        action: keep
+        regex: "true"
+      - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_path]
+        action: replace
+        target_label: __metrics_path__
+        regex: (.+)
+      - source_labels: [__address__, __meta_kubernetes_service_annotation_prometheus_io_port]
+        action: replace
+        regex: ([^:]+)(?::\d+)?;(\d+)
+        replacement: $1:$2
+        target_label: __address__
 
-      - job_name: 'kubernetes-services'
-        kubernetes_sd_configs:
-          - role: service
-        relabel_configs:
-          - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_scrape]
-            action: keep
-            regex: "true"
-          - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_path]
-            action: replace
-            target_label: __metrics_path__
-            regex: (.+)
-          - source_labels: [__address__, __meta_kubernetes_service_annotation_prometheus_io_port]
-            action: replace
-            regex: ([^:]+)(?::\d+)?;(\d+)
-            replacement: $1:$2
-            target_label: __address__
-            
-      - job_name: 'kubernetes-cadvisor'
-        scheme: https
-        tls_config:
-          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
-          insecure_skip_verify: true
-        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
-        kubernetes_sd_configs:
-        - role: node
-        relabel_configs:
-        - action: labelmap
-          regex: __meta_kubernetes_node_label_(.+)
-        - target_label: __address__
-          replacement: kubernetes.default.svc:443
-        - source_labels: [__meta_kubernetes_node_name]
-          regex: (.+)
-          target_label: __metrics_path__
-          replacement: /api/v1/nodes/${1}/proxy/metrics/cadvisor
-      
+    - job_name: 'kubernetes-cadvisor'
+      scheme: https
+      tls_config:
+        ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+        insecure_skip_verify: true
+      bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+      kubernetes_sd_configs:
+      - role: node
+      relabel_configs:
+      - action: labelmap
+        regex: __meta_kubernetes_node_label_(.+)
+      - target_label: __address__
+        replacement: kubernetes.default.svc:443
+      - source_labels: [__meta_kubernetes_node_name]
+        regex: (.+)
+        target_label: __metrics_path__
+        replacement: /api/v1/nodes/${1}/proxy/metrics/cadvisor
 
-  # Hier worden de alerts beschreven die Prometheus moet monitoren, deze alerts worden vervolgens doorgestuurd naar Alertmanager.  
   alerts.yml: |
     groups:
-      - name: system-alerts
-        rules:
-    
-          # Deze alert is een test alert, deze zal altijd afgaan en zorgt ervoor dat er een melding wordt gemaakt als er een alert is.
-          - alert: TestEmailAlert
-            expr: vector(1)
-            for: 1m
-            labels:
-              severity: info
-            annotations:
-              summary: "Test alert"
-              description: "Dit is een test alert, deze zal altijd afgaan en zorgt ervoor dat er een melding wordt gemaakt als er een alert is."
+    - name: system-alerts
+      rules:
 
-          # Deze alert zorgt ervoor dat er een melding wordt gemaakt als het RAM-gebruik boven de 50% komt.
-          - alert: HighMemoryUsage
-            expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 15
-            for: 2m
-            labels:
-              severity: warning
-            annotations:
-              summary: "RAM gebruik boven 50%"
-              description: "LET OP: Het RAM-geheugen is langer dan 2 minuten boven 50% zorg dat dit niet hoger wordt. Controleer wat ervoor zorgt dat het RAM-geheugen zo hoog is. Als dit hoger wordt kan het systeem crashen."
-    
-          # Deze alert zorgt ervoor dat er een melding wordt gemaakt als het opslaggebruik boven de 40% komt.
-          - alert: HighDiskUsage
-            expr: (1 - (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"})) * 100 > 40
-            for: 2m
-            labels:
-              severity: warning
-            annotations:
-              summary: "Opslaggebruik boven 40%"
-              description: "LET OP: De opslag is langer dan 2 minuten boven 40% zorg dat dit niet hoger wordt. Als dit hoger wordt heeft het systeem minder opslagruimte."
+      - alert: TestEmailAlert
+        expr: vector(1)
+        for: 1m
+        labels:
+          severity: info
+        annotations:
+          summary: "Test alert"
+          description: "Dit is een test alert, deze zal altijd afgaan en zorgt ervoor dat er een melding wordt gemaakt als er een alert is."
+
+      - alert: HighMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 15
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "RAM gebruik boven 15%"
+          description: "LET OP: Het RAM-geheugen is langer dan 2 minuten boven 15%. Controleer wat ervoor zorgt dat het RAM-geheugen zo hoog is."
+
+      - alert: HighDiskUsage
+        expr: (1 - (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"})) * 100 > 40
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Opslaggebruik boven 40%"
+          description: "LET OP: De opslag is langer dan 2 minuten boven 40%. Als dit hoger wordt heeft het systeem minder opslagruimte."
+
+      - alert: NodeOffline
+        expr: up{job="servers"} == 0
+        for: 3m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Server is offline"
+          description: "Prometheus kan server {{ $labels.instance }} al 3 minuten niet bereiken."
+
+      - alert: HighCpuUsage
+        expr: 100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "CPU gebruik is hoog"
+          description: "CPU van {{ $labels.instance }} draait langer dan 5 minuten boven 85%."
+
+      - alert: PodCrashLooping
+        expr: kube_pod_container_status_waiting_reason{reason="CrashLoopBackOff"} > 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Pod in CrashLoopBackOff"
+          description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} zit in CrashLoopBackOff."
