@@ -1,3 +1,4 @@
+# Standaard blokkeerregel (Default Deny)
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -9,6 +10,7 @@ spec:
   - Ingress
   - Egress
 ---
+# Inkomend verkeer toestaan voor monitoring
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -24,10 +26,12 @@ spec:
         matchLabels:
           kubernetes.io/metadata.name: ingress-nginx
   - from:
+    # Pods binnen de monitoring namespace mogen onderling communiceren
     - namespaceSelector:
         matchLabels:
           kubernetes.io/metadata.name: monitoring
 ---
+# Uitgaand verkeer toestaan voor monitoring
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -38,18 +42,22 @@ spec:
   policyTypes:
   - Egress
   egress:
+  # Sta intern verkeer in de monitoring namespace toe
   - to:
     - namespaceSelector:
         matchLabels:
           kubernetes.io/metadata.name: monitoring
+  # Sta verkeer toe naar alle andere namespaces (nodig om metrics te scrapen)
   - to:
     - namespaceSelector: {}
+  # Sta verkeer toe naar specifieke IP-reeksen (bijv. nodes of externe servers)
   - to:
     - ipBlock:
         cidr: 192.168.20.0/24
   - to:
     - ipBlock:
         cidr: 192.168.30.0/24
+  # Sta DNS resolutie toe via kube-system
   - to:
     - namespaceSelector:
         matchLabels:
@@ -59,6 +67,7 @@ spec:
       protocol: UDP
     - port: 53
       protocol: TCP
+  # Sta uitgaand netwerkverkeer overal naartoe toe op poort 587 (SMTP voor Alertmanager e-mails)
   - to:
     - ipBlock:
         cidr: 0.0.0.0/0

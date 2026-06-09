@@ -5,7 +5,9 @@ metadata:
   namespace: chat
   annotations:
     kubernetes.io/ingress.class: "nginx"
+    # Forceer geen HTTPS redirect
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    # Verleng de time-outs naar 3600 seconden (1 uur) om te voorkomen dat lange chat-verbindingen afbreken
     nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
 spec:
