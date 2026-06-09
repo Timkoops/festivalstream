@@ -1,3 +1,6 @@
+# Deze ConfigMap bevat de configuratie voor Prometheus, inclusief de scrape-configs en de alerting rules. 
+# Hier wordt beschreven welke metrics Prometheus moet verzamelen en welke alerts er moeten worden gemaakt op basis van die metrics.
+
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -24,6 +27,7 @@ data:
       - targets:
         - 'prometheus:9090'
 
+    # De volgende scrape-config is gebaseerd op de metrics die worden verzameld door node-exporter. Deze scrape-config zorgt ervoor dat Prometheus de metrics van node-exporter verzamelt, zoals bijvoorbeeld het RAM-gebruik, opslaggebruik, CPU-gebruik en of een server offline is.
     - job_name: 'servers'
       kubernetes_sd_configs:
       - role: node
@@ -41,7 +45,8 @@ data:
       static_configs:
       - targets:
         - 'kube-state-metrics:8080'
-
+    
+    # De volgende scrape-config is gebaseerd op de metrics die worden verzameld door kube-state-metrics. Deze scrape-config zorgt ervoor dat Prometheus de metrics van kube-state-metrics verzamelt, zoals bijvoorbeeld of een pod in een crashloop zit.
     - job_name: 'kubernetes-pods'
       kubernetes_sd_configs:
       - role: pod
@@ -67,6 +72,7 @@ data:
         action: replace
         target_label: pod
 
+    # De volgende scrape-config is gebaseerd op de metrics die worden verzameld door services. Deze scrape-config zorgt ervoor dat Prometheus de metrics van services verzamelt, zoals bijvoorbeeld of een service offline is.
     - job_name: 'kubernetes-services'
       kubernetes_sd_configs:
       - role: service
@@ -84,6 +90,7 @@ data:
         replacement: $1:$2
         target_label: __address__
 
+    # De volgende scrape-config is gebaseerd op de metrics die worden verzameld door cAdvisor. Deze scrape-config zorgt ervoor dat Prometheus de metrics van cAdvisor verzamelt, zoals bijvoorbeeld het RAM-gebruik, opslaggebruik, CPU-gebruik en of een server offline is.
     - job_name: 'kubernetes-cadvisor'
       scheme: https
       tls_config:
@@ -103,19 +110,21 @@ data:
         replacement: /api/v1/nodes/${1}/proxy/metrics/cadvisor
 
   alerts.yml: |
+  # Hier worden de alerts beschreven die Prometheus moet monitoren. Deze alerts zorgen ervoor dat er een melding wordt gemaakt als er een alert is.
     groups:
     - name: system-alerts
       rules:
 
-      - alert: TestEmailAlert
-        expr: vector(1)
-        for: 1m
-        labels:
-          severity: info
-        annotations:
-          summary: "Test alert"
-          description: "Dit is een test alert, deze zal altijd afgaan en zorgt ervoor dat er een melding wordt gemaakt als er een alert is."
+      #- alert: TestEmailAlert
+      #  expr: vector(1)
+      #  for: 1m
+      #  labels:
+      #    severity: info
+      #  annotations:
+      #    summary: "Test alert"
+      #    description: "Dit is een test alert, deze zal altijd afgaan en zorgt ervoor dat er een melding wordt gemaakt als er een alert is."
 
+      # De volgende alerts zijn gebaseerd op de metrics die worden verzameld door node-exporter en kube-state-metrics. Deze alerts zorgen ervoor dat er een melding wordt gemaakt als er een alert is, zoals bijvoorbeeld als het RAM-gebruik boven de 50% komt.
       - alert: HighMemoryUsage
         expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 50
         for: 2m
@@ -125,6 +134,7 @@ data:
           summary: "RAM gebruik boven 50%"
           description: "LET OP: Het RAM-geheugen is langer dan 2 minuten boven 50%. Controleer wat ervoor zorgt dat het RAM-geheugen zo hoog is."
 
+      # De volgende alert is gebaseerd op de metrics die worden verzameld door node-exporter. Deze alert zorgt ervoor dat er een melding wordt gemaakt als er een alert is, zoals bijvoorbeeld als het opslaggebruik boven de 40% komt.
       - alert: HighDiskUsage
         expr: (1 - (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"})) * 100 > 40
         for: 2m
@@ -134,15 +144,17 @@ data:
           summary: "Opslaggebruik boven 40%"
           description: "LET OP: De opslag is langer dan 2 minuten boven 40%. Als dit hoger wordt heeft het systeem minder opslagruimte."
 
+      # De volgende alert is gebaseerd op de metrics die worden verzameld door node-exporter. Deze alert zorgt ervoor dat er een melding wordt gemaakt als er een alert is, zoals bijvoorbeeld als het een server offline is.
       - alert: NodeOffline
         expr: up{job="servers"} == 0
         for: 3m
         labels:
           severity: critical
         annotations:
-          summary: "Server is offline"
-          description: "Prometheus kan server {{ $labels.instance }} al 3 minuten niet bereiken."
+          summary: "De server is offline"
+          description: "LET OP: Prometheus kan de server {{ $labels.instance }} al 3 minuten niet bereiken. Controleer of de server nog steeds online is en of er netwerkproblemen zijn."
 
+      # De volgende alert is gebaseerd op de metrics die worden verzameld door node-exporter. Deze alert zorgt ervoor dat er een melding wordt gemaakt als er een alert is, zoals bijvoorbeeld als het CPU-gebruik boven de 85% komt.
       - alert: HighCpuUsage
         expr: 100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 85
         for: 5m
@@ -150,8 +162,9 @@ data:
           severity: warning
         annotations:
           summary: "CPU gebruik is hoog"
-          description: "CPU van {{ $labels.instance }} draait langer dan 5 minuten boven 85%."
+          description: "LET OP: CPU van {{ $labels.instance }} draait langer dan 5 minuten boven 85%. Controleer welke processen veel CPU gebruiken en of er een piek in het gebruik is."
 
+      # De volgende alert is gebaseerd op de metrics die worden verzameld door kube-state-metrics. Deze alert zorgt ervoor dat er een melding wordt gemaakt als er een alert is, zoals bijvoorbeeld als een pod in een crashloop zit.
       - alert: PodCrashLooping
         expr: kube_pod_container_status_waiting_reason{reason="CrashLoopBackOff"} > 0
         for: 5m
@@ -159,4 +172,4 @@ data:
           severity: warning
         annotations:
           summary: "Pod in CrashLoopBackOff"
-          description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} zit in CrashLoopBackOff."
+          description: "LET OP: Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} zit in CrashLoopBackOff. Controleer de logs van de pod om te zien waarom deze crasht en probeer het probleem op te lossen."

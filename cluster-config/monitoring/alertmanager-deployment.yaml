@@ -18,10 +18,12 @@ spec:
       containers:
         - name: alertmanager
           image: prom/alertmanager:v0.28.1
+          # De volgende args zijn gebaseerd op de configuratie van alertmanager. Deze args zorgen ervoor dat alertmanager de configuratie gebruikt die is opgegeven in de ConfigMap, zodat alertmanager weet hoe het moet werken en waar het de meldingen naartoe moet sturen.
           args:
             - --config.file=/etc/alertmanager/alertmanager.yml
           ports:
             - containerPort: 9093
+          # De volgende volumeMounts zijn gebaseerd op de configuratie van alertmanager. Deze volumeMounts zorgen ervoor dat alertmanager de configuratie kan gebruiken die is opgegeven in de ConfigMap, zodat alertmanager weet hoe het moet werken en waar het de meldingen naartoe moet sturen.
           volumeMounts:
             - name: alertmanager-config
               mountPath: /etc/alertmanager

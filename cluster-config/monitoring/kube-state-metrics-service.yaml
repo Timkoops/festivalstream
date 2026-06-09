@@ -1,3 +1,6 @@
+# Kube-state-metrics Service
+# Hier wordt beschreven hoe andere services de deployment van kube-state-metrics kunnen bereiken. Deze service is nodig zodat Prometheus de metrics van kube-state-metrics kan verzamelen.
+
 apiVersion: v1
 kind: Service
 metadata:
