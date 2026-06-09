@@ -108,9 +108,9 @@ data:
         regex: (.+)
         target_label: __metrics_path__
         replacement: /api/v1/nodes/${1}/proxy/metrics/cadvisor
-
-  alerts.yml: |
+  
   # Hier worden de alerts beschreven die Prometheus moet monitoren. Deze alerts zorgen ervoor dat er een melding wordt gemaakt als er een alert is.
+  alerts.yml: |
     groups:
     - name: system-alerts
       rules:
