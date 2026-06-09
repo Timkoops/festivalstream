@@ -1,3 +1,7 @@
+# Prometheus Deployment
+# Dit is prometheus, deze service zorgt ervoor dat er metrics worden verzameld over de cluster, zoals bijvoorbeeld of een pod in een crashloop zit, of een service offline is, en hoeveel CPU er wordt gebruikt.
+# Hier wordt beschreven hoe prometheus wordt gedeployed en welke service er bij hoort.
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -21,6 +25,8 @@ spec:
       containers:
       - name: prometheus
         image: prom/prometheus:v2.54.1
+        # De volgende args zijn gebaseerd op de configuratie van prometheus.
+        # Deze args zorgen ervoor dat prometheus de juiste instellingen heeft, zoals bijvoorbeeld dat prometheus de metrics van het systeem kan verzamelen, en dat prometheus bepaalde metrics niet verzamelt die mogelijk problemen kunnen veroorzaken.
         args:
         - --config.file=/etc/prometheus/prometheus.yml
         - --storage.tsdb.path=/prometheus

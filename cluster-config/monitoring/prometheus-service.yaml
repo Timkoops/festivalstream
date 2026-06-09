@@ -1,3 +1,7 @@
+# Prometheus Service
+# Hier wordt beschreven hoe andere services de deployment van prometheus kunnen bereiken. 
+# Deze service is nodig zodat andere services, zoals bijvoorbeeld grafana, de metrics van prometheus kunnen verzamelen en weergeven.
+
 apiVersion: v1
 kind: Service
 metadata:

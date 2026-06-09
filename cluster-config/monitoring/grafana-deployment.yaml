@@ -1,4 +1,7 @@
-#Grafana Deployment
+# Grafana Deployment
+# Dit is grafana, deze service zorgt ervoor dat er een dashboard is waar je de metrics van Prometheus kunt bekijken.
+# Hier wordt beschreven hoe grafana wordt gedeployed en welke service er bij hoort.
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -24,6 +27,8 @@ spec:
           image: grafana/grafana:11.5.2
           ports:
             - containerPort: 3000
+          # De volgende env vars zijn gebaseerd op de configuratie van grafana. 
+          # Deze env vars zorgen ervoor dat grafana de juiste instellingen heeft, zoals bijvoorbeeld de gebruikersnaam en wachtwoord voor het dashboard, en dat grafana geen updates controleert, zodat er geen onverwachte updates worden geïnstalleerd die mogelijk problemen kunnen veroorzaken.
           env:
             - name: GF_SECURITY_ADMIN_USER
               value: admin
@@ -33,6 +38,7 @@ spec:
               value: "false"
             - name: GF_ANALYTICS_CHECK_FOR_PLUGIN_UPDATES
               value: "false"
+          # De volgende volumeMounts zijn gebaseerd op de configuratie van grafana. Deze volumeMounts zorgen ervoor dat grafana de juiste data kan opslaan, zoals bijvoorbeeld dashboards en configuraties.
           volumeMounts:
             - name: grafana-storage
               mountPath: /var/lib/grafana
