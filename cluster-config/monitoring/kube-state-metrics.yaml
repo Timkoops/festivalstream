@@ -1,0 +1,95 @@
+# Kube-state-metrics Deployment
+# Dit is kube-state-metrics, deze service zorgt ervoor dat er metrics worden verzameld over de status van de cluster.
+# Hier wordt beschreven hoe kube-state-metrics wordt gedeployed en welke service er bij hoort.
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kube-state-metrics
+  namespace: monitoring
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kube-state-metrics
+rules:
+# De volgende rules zijn gebaseerd op de metrics die worden verzameld door kube-state-metrics. Deze rules zorgen ervoor dat kube-state-metrics de juiste permissions heeft om de metrics te verzamelen.
+- apiGroups: [""]
+  resources:
+  - configmaps
+  - secrets
+  - nodes
+  - pods
+  - services
+  - resourcequotas
+  - replicationcontrollers
+  - persistentvolumeclaims
+  - persistentvolumes
+  - namespaces
+  - limitranges
+  verbs: ["list", "watch"]
+  # De volgende resources zijn gebaseerd op de metrics die worden verzameld door kube-state-metrics. Deze resources zorgen ervoor dat kube-state-metrics de juiste permissions heeft om de metrics te verzamelen.
+- apiGroups: ["apps"]
+  resources:
+  - statefulsets
+  - daemonsets
+  - deployments
+  - replicasets
+  verbs: ["list", "watch"]
+- apiGroups: ["batch"]
+  resources:
+  - cronjobs
+  - jobs
+  verbs: ["list", "watch"]
+- apiGroups: ["autoscaling"]
+  resources:
+  - horizontalpodautoscalers
+  verbs: ["list", "watch"]
+- apiGroups: ["networking.k8s.io"]
+  resources:
+  - ingresses
+  - networkpolicies
+  verbs: ["list", "watch"]
+- apiGroups: ["storage.k8s.io"]
+  resources:
+  - storageclasses
+  - volumeattachments
+  verbs: ["list", "watch"]
+---
+# De volgende ClusterRoleBinding is gebaseerd op de permissions die kube-state-metrics nodig heeft om de metrics te verzamelen. Deze ClusterRoleBinding zorgt ervoor dat kube-state-metrics de juiste permissions heeft om de metrics te verzamelen.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kube-state-metrics
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kube-state-metrics
+subjects:
+- kind: ServiceAccount
+  name: kube-state-metrics
+  namespace: monitoring
+---
+# De volgende Deployment is gebaseerd op de configuratie van kube-state-metrics. Deze Deployment zorgt ervoor dat kube-state-metrics wordt gedeployed en dat het de juiste permissions heeft om de metrics te verzamelen.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kube-state-metrics
+  namespace: monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kube-state-metrics
+  template:
+    metadata:
+      labels:
+        app: kube-state-metrics
+    spec:
+      serviceAccountName: kube-state-metrics
+      containers:
+      - name: kube-state-metrics
+        image: registry.k8s.io/kube-state-metrics/kube-state-metrics:v2.13.0
+        ports:
+        - containerPort: 8080
+          name: http-metrics
