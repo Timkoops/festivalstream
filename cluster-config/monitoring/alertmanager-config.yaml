@@ -9,8 +9,8 @@ data:
     global:
       smtp_smarthost: 'sandbox.smtp.mailtrap.io:587'
       smtp_from: 'alerts@festivalstream.local'
-      smtp_auth_username: '7b2a2f813459f4'
-      smtp_auth_password: '4a42b04687dfbf'
+      smtp_auth_username: 'c016545261d6fe'
+      smtp_auth_password: '79007a3b164a5c' 
 
     route:
       receiver: email
