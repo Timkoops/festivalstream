@@ -1,0 +1,56 @@
+# Node Exporter DaemonSet
+# Node Exporter is een tool die wordt gebruikt om metrics te verzamelen over de nodes in hetcluster, zoals bijvoorbeeld het RAM-gebruik, opslaggebruik, CPU-gebruik en of een server offline is. 
+# Hier wordt beschreven hoe node-exporter wordt gedeployed en welke instellingen er zijn voor node-exporter.
+
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: node-exporter
+  namespace: monitoring
+  labels:
+    app: node-exporter
+spec:
+  selector:
+    matchLabels:
+      app: node-exporter
+  template:
+    metadata:
+      labels:
+        app: node-exporter
+    spec:
+      hostNetwork: true
+      hostPID: true
+      tolerations:
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
+        effect: NoSchedule
+      - key: node-role.kubernetes.io/master
+        operator: Exists
+        effect: NoSchedule
+      containers:
+      - name: node-exporter
+        image: prom/node-exporter:v1.8.2
+        # De volgende args zijn gebaseerd op de configuratie van node-exporter. 
+        # Deze args zorgen ervoor dat node-exporter de juiste instellingen heeft, zoals bijvoorbeeld dat node-exporter de metrics van het systeem kan verzamelen, en dat node-exporter bepaalde metrics niet verzamelt die mogelijk problemen kunnen veroorzaken, zoals bijvoorbeeld metrics van docker of kubelet.
+        args:
+        - '--path.sysfs=/host/sys'
+        - '--path.rootfs=/host/root'
+        - '--collector.filesystem.mount-points-exclude=^/(dev|proc|sys|var/lib/docker/.+|var/lib/kubelet/.+)($|/)'
+        ports:
+        - containerPort: 9100
+          hostPort: 9100
+          protocol: TCP
+        volumeMounts:
+        - name: sys
+          mountPath: /host/sys
+          readOnly: true
+        - name: root
+          mountPath: /host/root
+          readOnly: true
+      volumes:
+      - name: sys
+        hostPath:
+          path: /sys
+      - name: root
+        hostPath:
+          path: /

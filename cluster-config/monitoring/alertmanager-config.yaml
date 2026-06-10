@@ -7,17 +7,21 @@ metadata:
 data:
   alertmanager.yml: |
     global:
-      smtp_smarthost: 'sandbox.smtp.mailtrap.io:587'
+      # De instellingen van mailtrap die worden gebruikt om de meldingen te versturen naar de opgegeven email adressen. 
       smtp_from: 'alerts@festivalstream.local'
       smtp_auth_username: 'c016545261d6fe'
-      smtp_auth_password: '79007a3b164a5c' 
+      smtp_auth_password: '79007a3b164a5c'
 
+    # De tijd instellingen voor de email hoelang en wanneer de email mag worden verstuurd. 
+    # De volgende instellingen zijn gebaseerd op de configuratie van alertmanager. Deze instellingen zorgen ervoor dat er niet te veel emails worden verstuurd als er meerdere alerts zijn, zodat de ontvangers niet worden overspoeld met meldingen.
     route:
       receiver: email
       group_wait: 10s
-      group_interval: 10s
-      repeat_interval: 1h
-
+      group_interval: 30s
+      # De repeat_interval zorgt ervoor dat als er een alert is die nog steeds actief is na 24 uur, er opnieuw een email wordt gestuurd naar de ontvangers. 
+      repeat_interval: 24h
+    
+    # Dit zijn de ontvangers van de meldingen, in dit geval is het een email ontvanger. Hier worden de email adressen opgegeven waar de meldingen naartoe gestuurd moeten worden.      
     receivers:
       - name: email
         email_configs:

@@ -1,3 +1,4 @@
+# 1. Definieer de IP-adressen die MetalLB mag uitdelen
 apiVersion: metallb.io/v1beta1
 kind: IPAddressPool
 metadata:
@@ -5,14 +6,18 @@ metadata:
   namespace: metallb-system
 spec:
   addresses:
+  # De reeks IP-adressen die toegewezen worden aan services van het type LoadBalancer
   - 192.168.40.50-192.168.40.99
+  # Laat MetalLB automatisch adressen uit deze pool toewijzen als er geen specifieke pool wordt gevraagd
   autoAssign: true
 ---
+# 2. Zorg dat de toegewezen IP-adressen bereikbaar worden in het netwerk
 apiVersion: metallb.io/v1beta1
 kind: L2Advertisement
 metadata:
   name: dmz-l2-advertisement
   namespace: metallb-system
 spec:
+  # Koppel deze advertentie (via Layer 2 ARP) aan de hierboven gedefinieerde IP pool
   ipAddressPools:
   - dmz-ip-pool

@@ -1,3 +1,6 @@
+# Grafana Service
+# Hier wordt beschreven hoe andere services de deployment van grafana kunnen bereiken.
+
 apiVersion: v1
 kind: Service
 metadata:

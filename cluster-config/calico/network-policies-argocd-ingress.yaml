@@ -1,14 +1,17 @@
+# Definieert de API en het type resource voor netwerkbeleid
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: allow-ingress-to-argocd
   namespace: argocd
 spec:
+  # Een lege podSelector {} betekent dat dit geldt voor alle pods in de 'argocd' namespace
   podSelector: {}
   policyTypes:
-  - Ingress
+  - Ingress # Dit beleid reguleert inkomend verkeer
   ingress:
   - from:
+    # Sta verkeer toe vanuit de ingress-nginx namespace (zodat de Ingress controller de pods kan bereiken)
     - namespaceSelector:
         matchLabels:
           kubernetes.io/metadata.name: ingress-nginx

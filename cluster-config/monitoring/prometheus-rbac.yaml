@@ -1,0 +1,56 @@
+# Prometheus RBAC Configuration
+# Hier wordt beschreven welke permissions prometheus nodig heeft om de metrics te verzamelen, en welke service account er wordt gebruikt voor prometheus. 
+# Deze RBAC configuratie is nodig zodat prometheus de juiste permissions heeft om de metrics te verzamelen, zoals bijvoorbeeld of een pod in een crashloop zit, of een service offline is, en hoeveel CPU er wordt gebruikt.
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: prometheus
+  namespace: monitoring
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: prometheus
+rules:
+# De volgende rules zijn gebaseerd op de metrics die worden verzameld door prometheus. 
+# Deze rules zorgen ervoor dat prometheus de juiste permissions heeft om de metrics te verzamelen.
+- apiGroups: [""]
+  resources:
+  - nodes
+  - nodes/metrics
+  - nodes/proxy
+  - services
+  - endpoints
+  - pods
+  - namespaces
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["discovery.k8s.io"]
+  resources:
+  - endpointslices
+  verbs: ["get", "list", "watch"]
+- apiGroups: [""]
+  resources:
+  - configmaps
+  verbs: ["get"]
+- apiGroups: ["networking.k8s.io", "extensions"]
+  resources:
+  - ingresses
+  verbs: ["get", "list", "watch"]
+- nonResourceURLs: ["/metrics"]
+  verbs: ["get"]
+---
+# De volgende ClusterRoleBinding is gebaseerd op de permissions die prometheus nodig heeft om de metrics te verzamelen. 
+# Deze ClusterRoleBinding zorgt ervoor dat prometheus de juiste permissions heeft om de metrics te verzamelen.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: prometheus
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: prometheus
+subjects:
+- kind: ServiceAccount
+  name: prometheus
+  namespace: monitoring
