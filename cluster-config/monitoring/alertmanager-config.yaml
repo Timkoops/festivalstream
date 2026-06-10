@@ -19,7 +19,7 @@ data:
       group_wait: 10s
       group_interval: 30s
       # De repeat_interval zorgt ervoor dat als er een alert is die nog steeds actief is na 24 uur, er opnieuw een email wordt gestuurd naar de ontvangers. 
-      repeat_interval: 24h
+      repeat_interval: 20m
     
     # Dit zijn de ontvangers van de meldingen, in dit geval is het een email ontvanger. Hier worden de email adressen opgegeven waar de meldingen naartoe gestuurd moeten worden.      
     receivers:
